@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador de Troca de Habitação | Century 21 Cardeira &amp; Costa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --gold: #bfaf87;
+    --bronze: #b18d64;
+    --dark: #1c1814;
+    --mid: #4a3f2f;
+    --light-bg: #f9f7f3;
+    --card-bg: #ffffff;
+    --border: #e8e2d6;
+    --text: #2d2418;
+    --text-light: #7a6b55;
+    --error: #c0392b;
+    --success: #27ae60;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--light-bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HERO ─────────────────────────────── */
+  .hero {
+    /* Fundo preto premium — integra naturalmente com o fundo da nova logo (#000000) */
+    background:
+      /* toque dourado subtil no centro-alto (detrás da logo) */
+      radial-gradient(ellipse 55% 45% at 50% 12%, rgba(191,175,135,0.07) 0%, transparent 65%),
+      /* brilho lateral esquerdo mínimo */
+      radial-gradient(ellipse 30% 40% at 0% 50%, rgba(177,141,100,0.05) 0%, transparent 60%),
+      /* brilho lateral direito mínimo */
+      radial-gradient(ellipse 30% 40% at 100% 50%, rgba(177,141,100,0.04) 0%, transparent 60%),
+      /* base: preto puro */
+      #000000;
+    position: relative;
+    overflow: hidden;
+    padding: 60px 24px 80px;
+    text-align: center;
+  }
+  .hero::before { display: none; }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 72px;
+    background: linear-gradient(to bottom, transparent, var(--light-bg));
+  }
+  .hero-inner { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; }
+  .hero-logo {
+    width: 340px;
+    height: auto;
+    max-width: 90%;
+    margin: 0 auto 36px;
+    display: block;
+    /* Sem filtro — o fundo preto da logo integra-se com o Hero */
+    filter: none;
+    box-shadow: none;
+  }
+  .hero-eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 3.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+    opacity: 0.85;
+  }
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 4.5vw, 44px);
+    font-weight: 600;
+    color: #ffffff;
+    line-height: 1.22;
+    margin-bottom: 18px;
+  }
+  .hero-title span { color: var(--gold); }
+  .hero-sub {
+    font-size: 16px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.68);
+    line-height: 1.65;
+    margin-bottom: 40px;
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .hero-cta {
+    display: inline-block;
+    background: var(--gold);
+    color: #0a0806;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 16px 40px;
+    border-radius: 3px;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: background 0.25s, transform 0.15s, box-shadow 0.25s;
+    box-shadow: 0 4px 20px rgba(191,175,135,0.35);
+    margin-bottom: 44px;
+  }
+  .hero-cta:hover { background: var(--bronze); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(177,141,100,0.4); }
+  .trust-badges {
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    flex-wrap: wrap;
+  }
+    .badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255,255,255,0.6);
+    font-size: 13px;
+    font-weight: 400;
+  }
+    .badge-icon {
+    width: 20px;
+    height: 20px;
+    border: 1.5px solid rgba(191,175,135,0.6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .badge-icon svg { width: 11px; height: 11px; }
+
+  /* ── QUIZ WRAPPER ─────────────────────── */
+  .quiz-wrapper {
+    max-width: 620px;
+    margin: -20px auto 0;
+    padding: 0 16px 60px;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ── PROGRESS ─────────────────────────── */
+  .progress-bar-wrap {
+    background: var(--card-bg);
+    border-radius: 12px 12px 0 0;
+    padding: 24px 28px 20px;
+    border: 1px solid var(--border);
+    border-bottom: none;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.04);
+  }
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .progress-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-light);
+  }
+  .progress-step-txt {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gold);
+  }
+  .progress-track {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--bronze));
+    border-radius: 2px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* ── STEP CARD ────────────────────────── */
+  .step-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-top: none;
+    padding: 36px 28px 28px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);
+    border-radius: 0 0 12px 12px;
+  }
+  .step { display: none; animation: stepIn 0.35s ease; }
+  .step.active { display: block; }
+  @keyframes stepIn {
+    from { opacity: 0; transform: translateX(18px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .step-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .step-subtitle {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  /* ── FORM ELEMENTS ────────────────────── */
+  .field { margin-bottom: 20px; }
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-light);
+    margin-bottom: 8px;
+  }
+  .field input[type="text"],
+  .field input[type="email"],
+  .field input[type="tel"] {
+    width: 100%;
+    padding: 13px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    color: var(--text);
+    background: #fdfcfa;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+    -webkit-appearance: none;
+  }
+  .field input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(191,175,135,0.15);
+  }
+  .field input.error {
+    border-color: var(--error) !important;
+    box-shadow: 0 0 0 3px rgba(192,57,43,0.1) !important;
+  }
+  .error-msg {
+    display: none;
+    font-size: 12px;
+    color: var(--error);
+    margin-top: 5px;
+    font-weight: 500;
+  }
+  .field input.error ~ .error-msg { display: block; }
+
+  /* ── OPTION GRID ──────────────────────── */
+  .option-grid { display: grid; gap: 10px; margin-bottom: 20px; }
+  .option-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .option-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .option-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .opt-btn {
+    padding: 13px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    background: #fdfcfa;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    line-height: 1.3;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .opt-btn:hover { border-color: var(--gold); color: var(--bronze); background: rgba(191,175,135,0.06); }
+  .opt-btn.selected {
+    border-color: var(--gold);
+    background: rgba(191,175,135,0.12);
+    color: var(--mid);
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(191,175,135,0.2);
+  }
+  .opt-btn.error-opt { border-color: var(--error) !important; }
+
+  .field-group-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-light);
+    margin-bottom: 8px;
+    display: block;
+  }
+  .field-group { margin-bottom: 22px; }
+  .inline-error {
+    font-size: 12px;
+    color: var(--error);
+    font-weight: 500;
+    margin-top: 4px;
+    display: none;
+  }
+  .inline-error.show { display: block; }
+
+  /* ── CONDITIONAL FIELDS ───────────────── */
+  .conditional { display: none; }
+  .conditional.show { display: block; }
+
+  /* ── TEXT INPUT FOR LOCATION ──────────── */
+  .location-input {
+    width: 100%;
+    padding: 13px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    color: var(--text);
+    background: #fdfcfa;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+  }
+  .location-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(191,175,135,0.15); }
+  .location-input.error { border-color: var(--error); box-shadow: 0 0 0 3px rgba(192,57,43,0.1); }
+
+  /* ── NAVIGATION ───────────────────────── */
+  .nav-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .btn-back {
+    flex: 0 0 auto;
+    padding: 13px 20px;
+    background: transparent;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-light);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: none;
+  }
+  .btn-back.show { display: block; }
+  .btn-back:hover { border-color: var(--gold); color: var(--mid); }
+  .btn-next {
+    flex: 1;
+    padding: 14px 24px;
+    background: var(--gold);
+    border: none;
+    border-radius: 6px;
+    color: var(--dark);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 12px rgba(191,175,135,0.3);
+  }
+  .btn-next:hover { background: var(--bronze); box-shadow: 0 4px 18px rgba(177,141,100,0.35); }
+  .btn-next:active { transform: scale(0.98); }
+
+  /* ── DIVIDER ──────────────────────────── */
+  .or-divider {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-light);
+    margin: 4px 0 16px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ── FOOTER ───────────────────────────── */
+  .footer {
+    text-align: center;
+    padding: 0 16px 40px;
+    font-size: 12px;
+    color: var(--text-light);
+    max-width: 620px;
+    margin: 0 auto;
+  }
+  .footer a { color: var(--bronze); text-decoration: none; }
+
+  /* ── RESPONSIVE ───────────────────────── */
+  @media (max-width: 480px) {
+    .hero { padding: 44px 20px 70px; }
+    .hero-logo { width: 240px; max-width: 85%; margin-bottom: 28px; }
+    .progress-bar-wrap { padding: 20px 20px 16px; }
+    .step-card { padding: 28px 20px 24px; }
+    .option-grid.cols-4 { grid-template-columns: 1fr 1fr; }
+    .option-grid.cols-3 { grid-template-columns: 1fr 1fr; }
+    .trust-badges { gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <img src="data:image/webp;base64,UklGRpgnAABXRUJQVlA4WAoAAAAIAAAAWwMACwIAVlA4ILgmAADw8wCdASpcAwwCPnU6mkmkoyKhIbHpEJAOiWdu8nJ7/QrHl45O11jv2/nj9Zepsx3aLIBtW/8z1w7hdxA/YL/R/0nut/wv9w6p/017dfIlhf7QtSD5f9yP4fsI/l++H5a6gX5J/N/9V9tHDi7T5hHvT9Y/6vqU/M/8v0I8QDgU6Af6I9X//D/bL0K/WfsIfsB1pvScEEO8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7Q+8+0PvPtD7z7P2BHV9b/Cu6/Ew6+Kmb2JngrbI01mGgErLy5djnKsBIpF8n+CD4rO5g9gH1gNnzAXnYA8Zh0rIyH9Co7uq+v5GC4DJnWyw1ZrGcpVK7IbKdjThJROAzYkA0rv3IsvlITPE7AsRiYplcU+Ra6//9+oqS3I8NdOrvQ0dl1Zz7Q+80a5ei8HcVu7YvQrpbOBBUCXT8gdUO295mFDgjcnXASto2hsUeME2PeQlbfRmklS4cpRpAa6zcnaM/U/rgAlbps2jxtw3l7hxtNz3lsMf+0BVcjHWLB7rOM5uYkfgDUzvFKfkI74FM/POrFwqA2ImcLvColRCwnbkhJ/D4mhvEw2TTnCitVreVH16xC2O8o/w5nSUZBkurD5WH7zT++ZVP5KNKyLJZ/6/GecEu8Jc+fQt5WzuDdjZwRUPmdgwz9n2RCj9kLbytvao0mlGpsXjHcvs7S0CZP+0PvNY2rxI2tphtYlBNDnvzqRy4T2QwiCe+svpX331caZIZu99gmXI4D3c+fADOQtY78nD5C+U1MWFU05BAKRHlZGuLo6wF8NC7AxebanbR4FMXbVSfhvAbYqvAGTunVouvR+i5l40q46frPmxJ7ewTD5jKA//VRCqjgDlTtKDywW0pCrAh78ADmT7xCdgoiu9jl1Fh0ACa+Ce4sO9cnA22Ue7KvwXZ7/gSmcTzS9oQJIPLJd6S5u6EEqKml7OQ11cA6+ttz5vvCCTjQTgkRCF5T0a0uKFRMTT38iGOqK7KP86SPAK/6QQ6t6IO1uCLuvtaRN29wNbLvizaKERCgG9VDzf2y61L0TOtoWNnlt/p9s12IKb/7fRpiNtWjn9wV7wfaDN1CBI2i7Doj3duXycVWmlMlbusesV3/XHGyopt/y2WVUQzQ+8+0P5D4skT9JrSrjrNq468FXttWc2iCR+0PvPhSUL3f1xui+GXdeYLxpRBayA8/N+ER5T+NhJt4fE0q46zauNidfbtvxFV/21LcHCeWZCp9fuVYXdxT478JGjhVXPGarTdaFurIYOBBDjalrNfin/5xsdlP0MDa4RhSfHBoDP51D9H9O6s6SkU71k4Yef/lfDYbxzLNCQEF3YaCAW/+xc4PfLiu5Mvhjt3NzPtm55x2oFcJCQU29h/Hm8WLjZzu+vBfs5er7USb1AXJkhYuRElNKuOs2rf7y96MK/iKBCc4Rk/Qv844PRHB/xp50l0jnMj1RQ6Slvjkd4YUBEC9p62PONfFL1Tdr7jISsoFItHgqgdtf7ZefZbVkFPHmPO1c81J7h/JMMKQMBN/Gc/jaFVQBfpw+mL59tnQfJTpoXKCXQgrt5l6wRmwVkaeFJ+GQHbK31kLEtQ5NsS9dagRR0KGxP6xRXfccOErsxUftk8Ku4WMUO/zSTJne7TtwsGzC4z+i2GuA7R+JIJiHD0PvPtD7z7Q5OiDRhYTFIFwMqK7o3Y9wqxBSl/0gn0VaqxSEs5Mzrj0AxkPRRY2ILVXBWcHC6wIT5NgVayhRnjamDd9IGhWM+7Wz4+e6CKJOrYYJmJDerdOzLy18aKI9Y37CSXVLi5inl0hUClmKIKIkl2R5b8eoDsNjCa5OpFaN2OpuS0gKpUT41UyvIJUjh4lG9a384ZZgA3Yl/MVEu7+3MJ+Zhil4eyCc5bpb/Ja2jwPRiUEeRJTSrjroELWx8lLSiGiNUjW4W9xf7he/zxhWNR3n2h959ofefaH3n2h959ofefaH3n2h959ofefaH3n2h959ofefaH3n2h959ofefaH3n2h959ofefaH3n2h959ofefaH3n2h959ofefaH3n2h959ofefaH3n2h959ofefaH3n2h959ofefaH3n2h959ofefaH3n2h959ofefaH3n2h959ofefaH3n2h959ofefaH3n2h959ofefaH3n2h959ofefaH3n2h959ofefaH3n2h959ofefaH3n2h959ofefaH3n2h959ofefaH3n2h959ofefaH3n2h959ofefaH3n2h959ocgAP7/svAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALhhsdyeFi6tPdbMQOOsG4uya2e4IC9KAI1OIspuXVKM3zOUCkmgIHbm4Jj5/vlB0JTZU5qdPjRG2D6+M0N8/6ZsCTxpBPe3HYY6xY9yI39oBdbmsr6O0cedY1zYtOyEhUMJhvaWZOwB0gdUj5HzHd9Uy5H/hsU+HX+PybzXIO1GkR3h2/nPFq0+FHmaM5s+cIu+Nyy0xR17ueRgb6Ops7Pvq0ULbUpZJmOG6EejJwD7QihcrWTk8IqHvUPk8wVcOf7LppNxWxoBWL0tws2CpEbeag6cAhtwtP6m38xu7ceLKZlQdtxkvgEMeMb34Y6Shy4iN7mRPdqzZFco//UQJQl5gYf+lox5IXXrFDxZ0rUXxt/FTNh6wUJo1zvMUdkqLwyeB8AQuyeMKJInzzDNKl/iKhLrvH/p1Vnvhex7jPmNhCZZNAFt5d/f7PeZ4RwTQggnsp657+igIoiJoK7F2LkfmgX1vBkQr13O2rn+jSjf67llpbcps2qdjfW9E9j+2iYRoCsDE3LuwqWp1V+T7/wfV3RHRyx7DtOrUKPH6pJm/oegoV2Eze5B9Q8HyvjJh3TZpBO+VE1OQ98ukZU8xN3Tc7OvBp23H+BdEUcA3nAkBxEpv2YtrN2XNilxwx/Tj8T/r1MYaq7ZQeMpvnyWgzqc/8cAkBG2eXyz6WNXgXcjD/Ie/ZU2gsBDmgRifQU+0Ub3MAL9dpeRGe/aYb5nE2gfsziUI3FhyFApIZQPKchLcstLbEHkRhpSJn3YcZbnVshc3/004YfAX5ohIrNAkbz+W31hgsxLtI4hdjnfPAFcJWtTJzafIl2zuRrIg/bGzP4916nBU1oKICU2cBHw8WdpyOwmRrEYwOEKdLH9dc+aTWAAXcGDn9lUd+OdKNHDSiYlEokjJPyaT/Bk4F2q6F2ajaU2/4u4qF19rsyxkRjdXYYPfC6jLktUgNC8IKYugkqW3NAKNY5OXbOYF0h2HogzQL1yk+2b5k2rhHet07GeRICqULmRnRBj0BxsImpXIc0vOcCcB8vdvrTVWo58kmscWbievWiyjms/g1K8KAyWDRBoAqWfCHiga6F1fTHXfQwdr4Ba8TDAvKMylfUUC1/EWFgGaPAjvwX9ma+CAvNE3DPC8g83wo3vlrme0mXgoDLlRH7f6eknFMP2qZ/FKvy8zkpWh/k/BczKlRCpesThIw2DFvf+UJvbKUG9W3pVIem/Q4+HVT2ZTBOuucUUQh4ob2o7Px4B4lj4NHGeobWhURp+piiEgX/hRlLiUyGVf9UT5Y+H4ltnj8z0cjVNMrghya9gCg330G1G9fcrdQMd+0htsSwqLxPE9Hpn+VZRTRiqUEo7BLPyqQDDqjSr4NLSHbpw2nOtHfGrqeCbVcWWK+SL5sDK8ewCVMtMRapgjo0SYEtCojwpiX6gi5BdRW+G40t8Fijz82p1Lf47kOO8aZl4tgqn2ZCtZ6rHQYmwk9cRX7gx6yiwZzA48Jrhsm9ya97xUHB1ZIarolUjPwgtokrpgo78Jnrmb3umWsdAK7EnU2PHO68YJ/tFmG4UjbU3G0NrQJqILdbPcL6Akw8eQJ7BaoZDVTAj1YKgR6QF+/YLZIfTSoSnhEUzzh+O1Zm8ZRox3ZFsWK07fLn9EZpxugZreyU5JSwPuQXq3cbd+MTQ/FUB9HHuLWSHZawX4Plssa+YSnj2eqM75a/3tKheVwENQ7IF6bTi9wd2XOhsnm27g+DC4+h5aYPAR9bNqzFDpZtaSXAXzE7dPsCyGxPkwGqUMt+CkntWgENcfuKeJl6u6+ZmlBZrm9yBoBEzn6PZTcfAAnitN/VsrBGuheQMnXrbE4rYHusR+s+yjfwNDKCBBX1mMtx0mdp8aCU2tzi3t7n/Uw4z+8Qtk7KxAKIc2ygS5uAww4daLHMGkYDt0xy8+TziU6nalvgrrPleIfUV1CG1NOUTVZmxVYb61yvDAlrynxrKa08JM6gHhAyO741DT8hoIEDU//EiknR/z5bsOVGZITldWuk86QDp9F9vuHuRBgCEj6ykF9CLmffJGxeMnx5aSTIWJ7ATqC90UO6UQPAqLRe8rDCx7tjFCECdn4WH/0pWiT/JfGZmMKQS7XfgQXwCoDz9UDKpFNX/lff5OaHi5Q6O6Z7Bf2IuRUo2Mo1fvMqN/jHLjHsvKTXubYe2O/mTqIIQVm7KowON27xcov+QlgiyXyRHxqsuhinfKDGEuI9v+inrlbpq9W+kAe4ujS11lLEpOA0HLvek9oScU1wPXQMyg6BCEPlZ49RDrQwWzUwhzEicUOZL3YIrTm6Sc0pLfRyU44CvLSLm8k8LgoKLbgeBDty7yS+PdZ75B8TOq8jWDlwRVZQ2H8R9r386Qk+o1Qs+5fi7mGFuz7v4r7W47bV4kBAArM8afRHNev6MQVzxeXGTeQS/2zNvTCLIxhkIMOsVe3kkx7XoknWus7W71ifncGz5T4l58TLAyH3BXvecTKiF1+SXtk9UyaQIMcuR7vBTH1ePXlSOSuAIBP870vBQ7OyeBlb0hhViBk+T0DAuhp135ofw55xyBRwbZ0Qamhx9wPgO2WfVCxgn3rFDgxLnc+pjX/jhJXfStOV2W+cXCVBSG2aJM2FUCuvMnRSYcbJlVED7R8kCjtyJ9+1whokzQAn5lrZSR60PPSam8MbJsk22jWXxIXskw6wr36/W0Erpx91bZVGjb4hF4DrEBpOedW+QzcF9BOb2JkkJcwvGN8f9GaPqpxXB6EuXTVZulCWcziVO52p/X4BQgC7Lp0xGgb2SyKAm4woDht+aZpkyad1HShrlFz1dmg+iGITxHqcpI9csRJz9LvJR8AOb9fM3WOuwcN8ZddSP3vm8tprrZjfX+vDeLYwOB3EHc69pigUtsseTAHI8CefhWhlIK8pv51w7g25cSDO3j/J6f3uY/e7MA02f5iHz11/Wbnm8CbEre6Z8U7ZTV9SKAa8AlO2Q06ICIP5xtKgEepnVaRYxT0xz6zm7qpj0odo7r4uSBThSCq/fqhxfC7m61v0i7EVnu7puGpbgEW1N6FxPLLDFG38UUHrnbvHTv6WHngtLzGgwnoMFHDhKsF7BCprf5ckwAn6wcF9WMp/aLaBwnHvBsYJKsivtkcduwX/Dpfn+0F80tRUBNLqDTLxxXq9BhAXWwJOCVwEK9COgaZ/0L9g9nvk4YxwAAyNSU3tbBYbnz9hBrgmDrDsXAAL53unfV8KBJ5Au1KrjNeieoyeUBWJgie2K39LPl8fG28OtqbgF62/6oDWXOXejLig+uPcXotwIpr/5vlDvf8UaNDdfloA/s5b/SkYPrTFr0mrwVmCEX2q1A1mzAz34TeRQH4g9Vsm4ESt1SOEZOHRN6ODCE0PQp8h5nhhqsjHwAJgOqLHg50coIP4/yYpKqS/HNgmpViCnJ8PYpdHT5klr/5qJWDYPcMZT19tivVLuqULfp3iHfBdRV+P7zjdhr5n/QIg2mxsppvonXlwCL+lhPM46JUorieJF0/ZUtKZygBZFRmBpel7pGmpZzJCIf17AMguLPyIvH/+ktO0hMW7sLum6TRMdjxKrrYuLDz39lXpIjm3S2NOsQrGGHeZOi0IkFhYK3QNd0J2RALIuNOeJO0/TTD1QdEidxee+ExqT0LLoqxmxHEBJHOGXc1ZhrKdCb7msNAtb2/qpgjPS80l2EEI3gmERMKolXh3ICRnzi4Ne9bzu+Mfpp6lpgZorWB0WrHH+tc2Uenbw5P5CkUNUAuFfaYM3PIxGiHX4O1JyXjL4rbLFFgwZT/wVzk1QyWf8MguS9EEzUrw1N1jFCF+0g4PfasWJ8Xj3lB4xUNbA6V26de/VS6GTUgZxmFynRXxZxpKypsHt/VvlRuQ9reupfowjhRTj/Vw4AV6x4uDZ3JD/M04YJ5OTCowS/0QC69CG43xWv657fO9X8KTCsU3trnrU6ZdeTplcDJnrKBDTM3bUsRPF8FHQz2mAyb0Q/A8c6Rypj1LRik9KaE755wzaTcFpoyVS3Wy87z6ccBdaqWs8My3oaYcGIMYXWP2s0p7fdJZllkWQeaLJy1iRSwvn7AwzxNGxrmI85sCwl8aYNF7CatzB2g1sBFkj7QuBTOR6FpfCXFFtzylNfF7erKL6dbwwrY+xC1USUYMNGhry7MH65kMN15SN6TVo38EGcCklKyDRRj6C1pOQZ58UhcNyBQmQO/jhBE55Pdv/slxvjfA7DtNCbxXjp4yRL9Al8gD9DEHOH2Ws0L69ze/Nr/tM6MEGokQmMATa31t9KiYZ4t+wbCiZ2wEXy6w8qDX+qOElsxnDFA8alKfr21hwWjtayKsdfe7y+jCXnGo+leXvafY6yeKCw/Z7U/tXMaBCev2wyFof51xbRdTg8tSQsxECVY2K3vYP/shrJk3REh8YXBp5H0zciVJ97ADfktwU3reLMnAn55+htrbLT4NfS0d8aNAnC617sncGX4VP5AmVOliWiLSumQ01EpnE2lxAwmly+wBmlHMoh+VZOCAphuFIE+DEx+M+6yFVJkjIXF4tI6509jWjdLA4jY1FI/d4GR6MQim8TORHVHyazfc9SIER+qUWumj+tT+7LBCa5SWA+U2XLORrJ4zFnIQ5Jkmc3KsUYiiusMRX8rpqB+/a6nnQZcz2p9T3+csbEnAHnVo+oi8W+96muGHAWZqotpui71E4EKtEBEGbdFnzFtQUftwGpyFsuwek6+wlRINSWmsViDi1QVwhxtRiQXzhZBml6odEcJxAx34Qd19PY/vtUdTsHQmLnEjRVzbM1M3tlqMfcD87BvTT6Zk/1EQj/K+XY4MPFPTdwB9Fu0ZFudNi8y518naN5+BnDhCLXF3eXAAJM2Ilxmxz/7mBQ5zcMGu2tzVt427iBvjmH13ggoBwpqfRgZrzaeFYSzzZeF4Snh5sbZiQcEA9LIfqfkjLOOVPeeIzTGnzEXB3YfaDluLvjnbQPfHGi8X7OIX6FSZspzZjwswAA/KggVCiNiPmDYUGqPGIXoa9giUgbcBPhNd7p0oFdSYbMaDktAKsJHnzls070iQZGqVdZzn7rPKITJbPHckAnb2flY9xC7/M2yJcHhVb25H4/8Xq4bQN4NOVn/qlq1l1yBd2v2fD6OzuqBHUPVEfiSWyJgTf0Dy3jg6d87xB9glVXKj2w/+9IvAAAAAAAAACkh2wIcU/TT23YnlFwbUjZdhgN2QsN6MTcj/g2z42I7nZeppLxgTHn4O2bFVDLaw8kMq5252KJ0ICQQgfzAkIXGXbDItFzph6ehEQCwazi8G5ic0kPx2xVlhaa2fcUuiw9wUPoEvmrYEf1UgudI1cdkzidL6c1q8tiCTIHEVEVOr+57I2nhpXIeVjovOB7VmSzOb7EXvkyv/CNGy+LHXBU7S8e/xfYoibV1lBXad8NkzypbqCVqWkGBrHVOKWfAvNYiV+swvSiL3grtc54WOrkkjqmMAk0cWUWHWniBGOJ0u+MOid7VtEXodF1q6O0SwG0j+jrqfd6G8fJwW7+r3QfPB4DvbKHJ8yNpbFtDTRK274rOhaQn5uf+Re1EOeSEp+jvfsUWiOm3+sHirRE9nIDuILTUfcpCJOWLAFoeUHVHXmYr4wdvDWXYAXo6panDpFg/31EHVwe6ReoeIG684jQQ6qYbFlNSpEO87gGWXC5ZPphYRymGbmbw7g7IFXxG2jrrLJhRgk+MauSV7rpfcSKQgv56fqF6wcA6x4H8k9JEv4J7eX31Ste3YUnLbzKhNlIzVuuOIMgS+0seKVKkGBfZ8ZSRf3bo3E/nln3sYdWNfT1udf0fI9lSrvqa7sMCM9bWvWtZQp9819i+XM04rOIkV85AWA253rVTWKBLeG2qpYe4mRzXY7Vhdl7dNwBYrvAjPtsPjjPnP3X8Z/i0kWm9PiEYix/A0sKqE9YNOzCGBmo5YAshwZNCPunAkgYSvkjELm3B1Fs/aATah2f+IprcGnJeSCKR57dtgkz2rR6rrKESwAXIUBSk3AyQCGMcyTgALOy5kvDaddugvYtFs8vF0P7l44cMd+AZ7ffrNYyVg37qbmah5FFlpvLa8sr3PEWKbJyuT8yaIHF1i42YhjRK9Xvlr58hCTMuTPYRDM4LWwj2TMlW/eQzSR6wY62WdyW0+VFZZ8df0q7+CAM8hHeaY6CSK3rqaS1KVyXGb6nYKJvNEGzSGj8137ka17clP6MUf0MZK3YcsHdcIPar+gH5iW9n8d5nVivgGGJ+nKc334E6SDRfF655RyYU8Zt12tZhNRCwqmp4mSCd+HHr1V4nS7UlIrHF/lM8OvncgjXL58E1pEMyygXrlXU1Zg6KnKZpRJ5+EQaQlOVB1sK4TtntdV1kvS7UkdkjNBRM8B536kOjlz/PbvYmZr4kUsLAlCYsy+UaMhMrSNIk3aOgoTEVAuO5wNnpckNg1+MeP+RdXPgD6YqSmXrWrODD6xQCDwfyyFx/dq3h3iq60pdQAB1v7kbEstoURHdiRPNju5cO7bfmmyPo3Wnyxto7LTBZGph14/Mzgpc1dRt4nI0FXBF7Yiyd/ljKh+dHNwtiWo4W/oL8kF6KCvffltUWr+TlDt9UrqIrBAQQAxRooiiAGS/szRmOdkvnKhXU9TIRll2mAR1aZ03S4ploq7Pg95tsfs9T6bZBw9FXJNR1ywEKabJMvjFAYmp2KUN82zXcN8eWrt5nbFu71CuMHFE8BiFgV+daj/YtUH0tID5aDT9rlBWlrzwIWAX6tOrAnH5HfJidlAN7SCeLHDPVhpQrIdZkstR9obhBFJ8qriG/GiB2xkZZaXvz53uoLNnJYSr3hYMm5udSGmCgrAdz9MMCdDqZ24agmy5eeW0hWCS6Unssioh/afqZMnauWkHE9jxGBYKI6DgUf3VxxjOojLWqkzWcuc5Scb09ttSPmBNPQVbNkndBXzJLdb9caY8k2qb8yoAycyVyrLoSIoUBtWPWyufk1CD430CH+sB8x30gFeKMJhQVGpymiuWLi35ugeBUWIIOR5QYIW5a7namswNxTcHim1pTcxM6BbG9CEIfqlEAA6IcOQuc5AybS11DZQMds1aRa16Q89ilPVe4Z+8z1RCSVRylAAKFNWinvRav3w6IWg++GK9C6NvNOiO3M87svOB0oxtz+3QGjTNmbUfjhY9xNFluOe7lXkuokZ8hTkGydjXUvX/gk+m4dww2UX+3UMJkM+rHdxvz6zF9mnvYPRsBAxH8Kw1ivQpeFz9c+4W1BJB02wmzqOCwrCIgr8S99BnKaUFQ6CJ7sIuQKJXb2G2IFLBjimzthmL7fd8GNFOrIvGrYMoLjUnCz3NiEDnMycbH1K4+bj48Iem5qWj4m3HGzV8vFiT/o+sVqEHE0bNBvpa9BL/3pU3Va1/SSsw9OOfulQcieyZ7tTrtqdfBZIIkGgTekk5XkRpvUlqLuK6+0rDdnuJNY93V1zVmyktHOpnlHrW1KrNmLYu3C9Oh5eOgOpJta7+NGm90S4QnVz10Z5tEVyUfqKsSa9nDkA+YQBIEm7PvWMUMbCyMfCAdryftrf3h6kFa8U3B4tUr/xDawjEoVuXyYOL6XaOk/aPflCMda7mKnvn5T+jFo7V+pdzFuqZ69IaAzRXUf2plTGPjHpBrm8GvxLfm8BEO25FOkzp+u3HiN0MVckl8Em3VkYrb7CDTKfhie7m2pZ0rM+MJIar0vOW6z9Ty8We22zeOO8yYSvcT1W7nb5jHxbLUypF4pfbHOjibo3jI9CSyV+4cbLpiIqQ4ZR+AnvUnXzG16uYzMxqOaA4KuUvPHIAl/MStc2/WdAHMc7l4wEhyaFMdzfa7YmL/19hzSFGI2CtUxwMm6tcn/cdvwwRUgPuGEbcyfIi77n1uGLltqGclUsEigmTUZl3es5094icdnsb5DtIvzSAN7BxvcQzUB05dHGr5s/+YFdWf6i1nwXq+ABvRgrtQo4aHsiZsBEhVqrQnMp2Egc2hM39yCD+79GCWC2JL1nkAWtWUt3QiIUKfSpXgpsBMeh8E85dFLvN7qJ8YkNi8mRsPoRBfRAy7GI9jYSUXXDWByHJC9EMJTTfas8HgZX4yr2g+z+FmoHPXBMWCZeFUQRPDbPm0+uOkN+JvGICeAUgyA7fSzylJXQ619j31SHQ7077klw/sB/aOHWD3luKrGf9Dj13Y6iObGe0QMSkld9Dt38HZhVa3c5h1J2DJGv9YJBRCmLB/zPn2IMuMCRYUNuL5mjrUrEWX1Oqqt9Dr69BRTHEhqiyZ8zasHipp5tYZ+De39+TaUWRsx9LpSTF1lwzL63TdEaMQTFx/o+Brub7AjUJz8/GoJUjk4o9qpv7DPwUwILCS3ZYwKXeiWbBNk36KkdLYVm+GbZX0ZITuy0aZJzNA+dDXHsVyl6D3ZUBuYDmhlCgXQ8cHzL6Ydfb3kfivV0xYFqVrkOPzqtAdfXm85JXV3SQn1EmD7xW571rrLgXizZqx5pbYkTCZee0h+UDMt+NM3X0i/1qmnbFhmif7C3Q1Pljf1rRorB1dPj00O8/Ed+ophMlV0dzsSrdq55DOMc5mGSWh/yuX6c062eGE6p+Jl50PoOAh1VGULx/PvpMcpUXGhvtR6nSthJ/9K4m/AIkr7s/OKJkcXmUelscKguPZUcWs62Ai1QVxEMVrdt0R3Bo4gtFYrK1pGVbCU136kt6FUdyixklIq9qEmwCFNZgs513M1EYYgOEP/lRU0bVlmUcK8tMbv2jyjVw0HNS+qnyK1FkLp45IXDOUmzjQ2/ytnSMQBfGsIudxjTVcmxMdUQU/YxOtt6LcMR8t1+CRx5CmXTuAZ605OzIYjmlHIOz+RVD4/HO5BHlJgEz5qEg/a5MMRyRJSM4KpuPAqrrGadpgL7TWZrdMYTP43NBKY9uSrwyzp/2CE/tagPzc9XAJWYfVeYxfS0VB/TDg8rthspHWug/pLIpB4kcajOh5d+xUrP06nJy1Gv8TfpK0WKkSF2Q3s2VAUdv6Vs59Ry6dM2ViPq67bE7MHUIxSctlDVeeCDeaY7bJgTr/BVFzi7GIBOeoSDQfmRyMcvMIutkrN9cWi59G91PVP9EI6mvQX+zstfFQ7jeIjDw/iFzoY0DAfq9k3jRXoPvr4hUCjQf81TtEQPkU4AsoQz3OxhlLpgqEKe8gdW6l7vCIxqod9OQIneTrpY71Poyi5faO0Ta8/O/OFMhdAKgkYOb0IpYD3sYpjxql988S6di1Sy8mByK/zUfZ0vk0NA3DWTnNdhd80Y0nKf+42S2A8fyXUGRiHfFWNP99QtbOJSRQdAvw9ZpcJ+QoTOag5bwuQlXbyxeG1bJlg1yNLqQoUu5FJisUhMV0yAwDeAWzce+b9MN7+d/M0NWNej4huyEie/3aGCV57wXBZJIx90r34n+5W/SrcLcNLc5u+8sKGub6aCXNS93e6qnGIXPRHfEMGcJKIRtJpTXXG36b1Kf2imhqPT1MOqgsjrUXvmU+tIXl2gRrw/PbeP6L5Q0FBR0mCrSj2/LqeymEzdyWeGz/5bFqMXruo3DVsPACQ/I2/Or6nDO0zkMLSRMUSYNWmdEUasVgjiPCQN/pmkTGP63vUwF7NjBdIe5YNAG26spG54TejrtH1au6MPgvlUvQCi5yh6JaQYdtjFbOWjmUhjHwBX5wrKca84SidXSh93kQIYTXBm50LmurBANc1ZNZwd7kOVMOE85w7Dddo6WIll4rFpihTC/RGTI3CPmPEwJMKoUYkMexbXupCOZABfJNxWfIsdYxwfO884SIrSpAarnIG2E5vYLhQ8MiMe5WIJyxMChjcou6n5Mbwo50aTJpI+NK1H/JnYcs8lGtIBMwKWmg/T7mPFUz0N7OZEAOPGahXojjkDvPuGfJvdMr7X7wfHQCA3uv2bwxVU8Jnty9QrEqKasHXOkaCl19X7Yn9Sfd4n2admRx8wz8TAnJBBSKiX34cn+t8CcaeOnIsWv6R2WH+O06TgUEXPgAwp7ObUcCNduQrQ23cluisqM3lRJPoF9Bite4Q+hryR0mU32slBXblKT85x6A19vNUW3ZBpA96IzjWTTnFL9hPfENjW+TlWzXTzIazd8CGgYgwtOyVAGi2/d0RkEuS5PGEjBqE8ezOsycenFtDIyvIvE8F/jqeH8IKU8cW3Q24oHc/SNK1etQYxv/nG3o4PpJ1TUVwsZi3KLvN8PgkLnTOeoiU0/y2O2OE+TOCr4QbaSxpLGDcSYSWhw4AluX0i17NTKIHbV+8C0lDXJucYvBZ+gbW/zJirBHtuz1vDOeJZUHZaJTDqd1UejrJN9oY4a3LWemaQ7HUndlYkLSBeP+j492rnV41fj150HvYHPGgx/FIYMqoAP2KJKJ7RRoXvqe2ez4NKvHMSRJzgIerFQJXcm6XF96TYHlijTk1oQ1I56Dj2S2BO4IBRPgTPtv8DVVh5UDnX9b2dUHYWbgjNGJsDJnXheO8uQn2GP/O779sjrcnXhDKmDzlKJ2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABFWElGugAAAEV4aWYAAElJKgAIAAAABgASAQMAAQAAAAEAAAAaAQUAAQAAAFYAAAAbAQUAAQAAAF4AAAAoAQMAAQAAAAIAAAATAgMAAQAAAAEAAABphwQAAQAAAGYAAAAAAAAASAAAAAEAAABIAAAAAQAAAAYAAJAHAAQAAAAwMjEwAZEHAAQAAAABAgMAAKAHAAQAAAAwMTAwAaADAAEAAAD//wAAAqAEAAEAAABcAwAAA6AEAAEAAAAMAgAAAAAAAA==" alt="Century 21 Cardeira &amp; Costa" class="hero-logo">
+    <div class="hero-eyebrow">Simulador Exclusivo</div>
+    <h1 class="hero-title">
+      Está pronto para trocar<br>de habitação com <span>confiança</span>?
+    </h1>
+    <p class="hero-sub">
+      Descubra em menos de 3 minutos a sua margem real de manobra para concretizar a troca de casa — com o apoio de uma equipa especializada.
+    </p>
+    <button class="hero-cta" onclick="document.querySelector('.quiz-wrapper').scrollIntoView({behavior:'smooth'})">
+      Iniciar Simulação Gratuita
+    </button>
+    <div class="trust-badges">
+      <div class="badge">
+        <div class="badge-icon">
+          <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="6" cy="6" r="5" stroke="rgba(28,20,10,0.6)" stroke-width="1.2"/>
+            <path d="M3.5 6L5.2 7.8L8.5 4.5" stroke="rgba(28,20,10,0.6)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        Menos de 3 minutos
+      </div>
+      <div class="badge">
+        <div class="badge-icon">
+          <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 1L7.5 4.5H11L8.5 6.5L9.5 10L6 8L2.5 10L3.5 6.5L1 4.5H4.5L6 1Z" stroke="rgba(28,20,10,0.6)" stroke-width="1.1" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        Sem compromisso
+      </div>
+      <div class="badge">
+        <div class="badge-icon">
+          <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2 6H4L5 3L7 9L8 6H10" stroke="rgba(28,20,10,0.6)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        Resultado imediato
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<div class="quiz-wrapper">
+
+  <!-- PROGRESS BAR -->
+  <div class="progress-bar-wrap">
+    <div class="progress-meta">
+      <span class="progress-label">O seu simulador</span>
+      <span class="progress-step-txt" id="stepTxt">Passo 1 de 5</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width:20%"></div>
+    </div>
+  </div>
+
+  <!-- STEP CARD -->
+  <div class="step-card">
+
+    <!-- STEP 1 -->
+    <div class="step active" id="step1">
+      <h2 class="step-title">O que procura?</h2>
+      <p class="step-subtitle">Diga-nos o que tem em mente para a sua nova habitação.</p>
+
+      <div class="field-group">
+        <span class="field-group-label">Tipo de imóvel</span>
+        <div class="option-grid cols-2" id="tipoProc">
+          <button type="button" class="opt-btn" data-val="Apartamento" onclick="selectOpt(this,'tipoProc')">Apartamento</button>
+          <button type="button" class="opt-btn" data-val="Moradia" onclick="selectOpt(this,'tipoProc')">Moradia</button>
+        </div>
+        <div class="inline-error" id="err-tipoProc">Por favor selecione o tipo de imóvel.</div>
+      </div>
+
+      <div class="field-group">
+        <span class="field-group-label">Tipologia pretendida</span>
+        <div class="option-grid cols-4" id="tipologiaProc">
+          <button type="button" class="opt-btn" data-val="T1" onclick="selectOpt(this,'tipologiaProc')">T1</button>
+          <button type="button" class="opt-btn" data-val="T2" onclick="selectOpt(this,'tipologiaProc')">T2</button>
+          <button type="button" class="opt-btn" data-val="T3" onclick="selectOpt(this,'tipologiaProc')">T3</button>
+          <button type="button" class="opt-btn" data-val="T4+" onclick="selectOpt(this,'tipologiaProc')">T4+</button>
+        </div>
+        <div class="inline-error" id="err-tipologiaProc">Por favor selecione a tipologia.</div>
+      </div>
+
+      <div class="field">
+        <label for="locProc">Localização pretendida</label>
+        <input type="text" id="locProc" class="location-input" placeholder="ex: Lisboa, Cascais, Sintra…">
+        <div class="error-msg" id="err-locProc" style="display:none">Por favor indique a localização pretendida.</div>
+      </div>
+
+      <div class="nav-row">
+        <button type="button" class="btn-back" id="back1" onclick="goBack()">← Voltar</button>
+        <button type="button" class="btn-next" onclick="nextStep(1)">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step" id="step2">
+      <h2 class="step-title">O que precisa de vender?</h2>
+      <p class="step-subtitle">Conte-nos sobre o imóvel que tem atualmente.</p>
+
+      <div class="field-group">
+        <span class="field-group-label">Tipo de imóvel atual</span>
+        <div class="option-grid cols-2" id="tipoAtual">
+          <button type="button" class="opt-btn" data-val="Apartamento" onclick="selectOpt(this,'tipoAtual'); updateStep2()">Apartamento</button>
+          <button type="button" class="opt-btn" data-val="Moradia" onclick="selectOpt(this,'tipoAtual'); updateStep2()">Moradia</button>
+          <button type="button" class="opt-btn" data-val="Terreno" onclick="selectOpt(this,'tipoAtual'); updateStep2()">Terreno</button>
+          <button type="button" class="opt-btn" data-val="Não preciso vender" onclick="selectOpt(this,'tipoAtual'); updateStep2()">Não preciso vender</button>
+        </div>
+        <div class="inline-error" id="err-tipoAtual">Por favor selecione o tipo.</div>
+      </div>
+
+      <div class="conditional" id="condTipologia">
+        <div class="field-group">
+          <span class="field-group-label">Tipologia atual</span>
+          <div class="option-grid cols-4" id="tipologiaAtual">
+            <button type="button" class="opt-btn" data-val="T1" onclick="selectOpt(this,'tipologiaAtual')">T1</button>
+            <button type="button" class="opt-btn" data-val="T2" onclick="selectOpt(this,'tipologiaAtual')">T2</button>
+            <button type="button" class="opt-btn" data-val="T3" onclick="selectOpt(this,'tipologiaAtual')">T3</button>
+            <button type="button" class="opt-btn" data-val="T4+" onclick="selectOpt(this,'tipologiaAtual')">T4+</button>
+          </div>
+          <div class="inline-error" id="err-tipologiaAtual">Por favor selecione a tipologia.</div>
+        </div>
+      </div>
+
+      <div class="conditional" id="condEstado">
+        <div class="field-group">
+          <span class="field-group-label">Estado do imóvel</span>
+          <div class="option-grid cols-3" id="estadoImovel">
+            <button type="button" class="opt-btn" data-val="Novo ou Recuperado" onclick="selectOpt(this,'estadoImovel')">Novo ou Recuperado</button>
+            <button type="button" class="opt-btn" data-val="Usado em Bom Estado" onclick="selectOpt(this,'estadoImovel')">Usado em Bom Estado</button>
+            <button type="button" class="opt-btn" data-val="Precisa de Obras" onclick="selectOpt(this,'estadoImovel')">Precisa de Obras</button>
+          </div>
+          <div class="inline-error" id="err-estadoImovel">Por favor selecione o estado.</div>
+        </div>
+      </div>
+
+      <div class="conditional" id="condZona">
+        <div class="field">
+          <label for="zonaAtual">Zona do imóvel atual</label>
+          <input type="text" id="zonaAtual" class="location-input" placeholder="ex: Porto, Braga, Setúbal…">
+          <div class="error-msg" id="err-zonaAtual" style="display:none">Por favor indique a zona do imóvel.</div>
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <button type="button" class="btn-back show" onclick="goBack()">← Voltar</button>
+        <button type="button" class="btn-next" onclick="nextStep(2)">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step" id="step3">
+      <h2 class="step-title">A sua margem de manobra</h2>
+      <p class="step-subtitle">Vamos perceber a sua situação financeira atual.</p>
+
+      <div class="field-group">
+        <span class="field-group-label">Tem crédito habitação ativo?</span>
+        <div class="option-grid cols-2" id="temCredito">
+          <button type="button" class="opt-btn" data-val="Sim" onclick="selectOpt(this,'temCredito'); toggleCredito()">Sim</button>
+          <button type="button" class="opt-btn" data-val="Não" onclick="selectOpt(this,'temCredito'); toggleCredito()">Não</button>
+        </div>
+        <div class="inline-error" id="err-temCredito">Por favor responda sobre o crédito.</div>
+      </div>
+
+      <div class="conditional" id="condCredito">
+        <div class="field-group">
+          <span class="field-group-label">Capital em dívida</span>
+          <div class="option-grid cols-2" id="capitalDivida">
+            <button type="button" class="opt-btn" data-val="Menos de 50.000€" onclick="selectOpt(this,'capitalDivida')">Menos de 50.000€</button>
+            <button type="button" class="opt-btn" data-val="50.000€ a 100.000€" onclick="selectOpt(this,'capitalDivida')">50k€ a 100k€</button>
+            <button type="button" class="opt-btn" data-val="100.000€ a 200.000€" onclick="selectOpt(this,'capitalDivida')">100k€ a 200k€</button>
+            <button type="button" class="opt-btn" data-val="Mais de 200.000€" onclick="selectOpt(this,'capitalDivida')">+ de 200k€</button>
+          </div>
+          <div class="inline-error" id="err-capitalDivida">Por favor selecione o capital em dívida.</div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <span class="field-group-label">Capitais próprios disponíveis</span>
+        <div class="option-grid cols-2" id="capitaisProprios">
+          <button type="button" class="opt-btn" data-val="Nenhum" onclick="selectOpt(this,'capitaisProprios')">Nenhum</button>
+          <button type="button" class="opt-btn" data-val="Até 20.000€" onclick="selectOpt(this,'capitaisProprios')">Até 20.000€</button>
+          <button type="button" class="opt-btn" data-val="20.000€ a 60.000€" onclick="selectOpt(this,'capitaisProprios')">20k€ a 60k€</button>
+          <button type="button" class="opt-btn" data-val="Mais de 60.000€" onclick="selectOpt(this,'capitaisProprios')">+ de 60k€</button>
+        </div>
+        <div class="inline-error" id="err-capitaisProprios">Por favor selecione os capitais próprios.</div>
+      </div>
+
+      <div class="nav-row">
+        <button type="button" class="btn-back show" onclick="goBack()">← Voltar</button>
+        <button type="button" class="btn-next" onclick="nextStep(3)">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step" id="step4">
+      <h2 class="step-title">O seu horizonte temporal</h2>
+      <p class="step-subtitle">Em quanto tempo pretende concretizar a troca?</p>
+
+      <div class="field-group">
+        <span class="field-group-label">Prazo pretendido</span>
+        <div class="option-grid cols-2" id="prazo">
+          <button type="button" class="opt-btn" data-val="O mais rápido possível" onclick="selectOpt(this,'prazo')">O mais rápido possível</button>
+          <button type="button" class="opt-btn" data-val="Menos de 3 meses" onclick="selectOpt(this,'prazo')">Menos de 3 meses</button>
+          <button type="button" class="opt-btn" data-val="3 a 6 meses" onclick="selectOpt(this,'prazo')">3 a 6 meses</button>
+          <button type="button" class="opt-btn" data-val="Mais de 6 meses" onclick="selectOpt(this,'prazo')">Mais de 6 meses</button>
+        </div>
+        <div class="inline-error" id="err-prazo">Por favor selecione o prazo.</div>
+      </div>
+
+      <div class="field-group">
+        <span class="field-group-label">Motivo principal</span>
+        <div class="option-grid cols-2" id="motivo">
+          <button type="button" class="opt-btn" data-val="Família ou necessidade de espaço" onclick="selectOpt(this,'motivo')">Família ou espaço</button>
+          <button type="button" class="opt-btn" data-val="Mudança de localização" onclick="selectOpt(this,'motivo')">Mudança de localização</button>
+          <button type="button" class="opt-btn" data-val="Melhor qualidade de vida" onclick="selectOpt(this,'motivo')">Melhor qualidade de vida</button>
+          <button type="button" class="opt-btn" data-val="Razões financeiras" onclick="selectOpt(this,'motivo')">Razões financeiras</button>
+          <button type="button" class="opt-btn" data-val="Outro" onclick="selectOpt(this,'motivo')">Outro</button>
+        </div>
+        <div class="inline-error" id="err-motivo">Por favor indique o motivo.</div>
+      </div>
+
+      <div class="nav-row">
+        <button type="button" class="btn-back show" onclick="goBack()">← Voltar</button>
+        <button type="button" class="btn-next" onclick="nextStep(4)">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="step" id="step5">
+      <h2 class="step-title">Como podemos ajudá-lo?</h2>
+      <p class="step-subtitle">Os seus dados são tratados com total confidencialidade.</p>
+
+      <div class="field">
+        <label for="nomeCompleto">Nome completo</label>
+        <input type="text" id="nomeCompleto" placeholder="O seu nome">
+        <div class="error-msg" id="err-nome">Por favor indique o seu nome.</div>
+      </div>
+
+      <div class="field">
+        <label for="telemovel">Telemóvel</label>
+        <input type="tel" id="telemovel" placeholder="+351 9XX XXX XXX">
+        <div class="error-msg" id="err-tel">Por favor indique um número válido (mín. 9 dígitos).</div>
+      </div>
+
+      <div class="field">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" placeholder="o.seu@email.com">
+        <div class="error-msg" id="err-email">Por favor indique um e-mail válido.</div>
+      </div>
+
+      <div class="nav-row">
+        <button type="button" class="btn-back show" onclick="goBack()">← Voltar</button>
+        <button type="button" class="btn-next" onclick="submitForm()" style="background:var(--bronze)">Ver Resultado →</button>
+      </div>
+    </div>
+
+  </div><!-- /step-card -->
+</div><!-- /quiz-wrapper -->
+
+<div class="footer">
+  <p>© 2025 Century 21 Cardeira &amp; Costa · Todos os direitos reservados<br>
+  <a href="#">Política de Privacidade</a> · Dados tratados de forma confidencial</p>
+</div>
+
+<script>
+  var currentStep = 1;
+  var answers = {};
+
+  function getSelectedVal(groupId) {
+    var btn = document.querySelector('#' + groupId + ' .opt-btn.selected');
+    return btn ? btn.getAttribute('data-val') : null;
+  }
+
+  function selectOpt(btn, groupId) {
+    var btns = document.querySelectorAll('#' + groupId + ' .opt-btn');
+    btns.forEach(function(b) { b.classList.remove('selected', 'error-opt'); });
+    btn.classList.add('selected');
+    var err = document.getElementById('err-' + groupId);
+    if (err) err.classList.remove('show');
+  }
+
+  function toggleCredito() {
+    var val = getSelectedVal('temCredito');
+    var cond = document.getElementById('condCredito');
+    if (val === 'Sim') { cond.classList.add('show'); }
+    else { cond.classList.remove('show'); }
+  }
+
+  function updateStep2() {
+    var val = getSelectedVal('tipoAtual');
+    var condT = document.getElementById('condTipologia');
+    var condE = document.getElementById('condEstado');
+    var condZ = document.getElementById('condZona');
+    if (val === 'Terreno' || val === 'Não preciso vender') {
+      condT.classList.remove('show');
+      condE.classList.remove('show');
+      condZ.classList.remove('show');
+    } else {
+      condT.classList.add('show');
+      condE.classList.add('show');
+      condZ.classList.add('show');
+    }
+    if (val === 'Não preciso vender') {
+      condZ.classList.remove('show');
+    }
+  }
+
+  function showError(id, show) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    if (show) el.classList.add('show');
+    else el.classList.remove('show');
+  }
+
+  function setInputError(id, hasErr) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    if (hasErr) el.classList.add('error');
+    else el.classList.remove('error');
+  }
+
+  function validateStep1() {
+    var ok = true;
+    if (!getSelectedVal('tipoProc')) {
+      showError('err-tipoProc', true);
+      document.querySelectorAll('#tipoProc .opt-btn').forEach(function(b) { b.classList.add('error-opt'); });
+      ok = false;
+    }
+    if (!getSelectedVal('tipologiaProc')) {
+      showError('err-tipologiaProc', true);
+      document.querySelectorAll('#tipologiaProc .opt-btn').forEach(function(b) { b.classList.add('error-opt'); });
+      ok = false;
+    }
+    var loc = document.getElementById('locProc').value.trim();
+    if (!loc) {
+      document.getElementById('locProc').classList.add('error');
+      document.getElementById('err-locProc').style.display = 'block';
+      ok = false;
+    } else {
+      document.getElementById('locProc').classList.remove('error');
+      document.getElementById('err-locProc').style.display = 'none';
+    }
+    return ok;
+  }
+
+  function validateStep2() {
+    var ok = true;
+    var tipo = getSelectedVal('tipoAtual');
+    if (!tipo) {
+      showError('err-tipoAtual', true);
+      document.querySelectorAll('#tipoAtual .opt-btn').forEach(function(b) { b.classList.add('error-opt'); });
+      ok = false;
+    }
+    if (tipo && tipo !== 'Terreno' && tipo !== 'Não preciso vender') {
+      if (!getSelectedVal('tipologiaAtual')) {
+        showError('err-tipologiaAtual', true);
+        document.querySelectorAll('#tipologiaAtual .opt-btn').forEach(function(b) { b.classList.add('error-opt'); });
+        ok = false;
+      }
+      if (!getSelectedVal('estadoImovel')) {
+        showError('err-estadoImovel', true);
+        document.querySelectorAll('#estadoImovel .opt-btn').forEach(function(b) { b.classList.add('error-opt'); });
+        ok = false;
+      }
+      var zona = document.getElementById('zonaAtual').value.trim();
+      if (!zona) {
+        document.getElementById('zonaAtual').classList.add('error');
+        document.getElementById('err-zonaAtual').style.display = 'block';
+        ok = false;
+      } else {
+        document.getElementById('zonaAtual').classList.remove('error');
+        document.getElementById('err-zonaAtual').style.display = 'none';
+      }
+    }
+    return ok;
+  }
+
+  function validateStep3() {
+    var ok = true;
+    var cred = getSelectedVal('temCredito');
+    if (!cred) {
+      showError('err-temCredito', true);
+      document.querySelectorAll('#temCredito .opt-btn').forEach(function(b) { b.classList.add('error-opt'); });
+      ok = false;
+    }
+    if (cred === 'Sim' && !getSelectedVal('capitalDivida')) {
+      showError('err-capitalDivida', true);
+      document.querySelectorAll('#capitalDivida .opt-btn').forEach(function(b) { b.classList.add('error-opt'); });
+      ok = false;
+    }
+    if (!getSelectedVal('capitaisProprios')) {
+      showError('err-capitaisProprios', true);
+      document.querySelectorAll('#capitaisProprios .opt-btn').forEach(function(b) { b.classList.add('error-opt'); });
+      ok = false;
+    }
+    return ok;
+  }
+
+  function validateStep4() {
+    var ok = true;
+    if (!getSelectedVal('prazo')) {
+      showError('err-prazo', true);
+      document.querySelectorAll('#prazo .opt-btn').forEach(function(b) { b.classList.add('error-opt'); });
+      ok = false;
+    }
+    if (!getSelectedVal('motivo')) {
+      showError('err-motivo', true);
+      document.querySelectorAll('#motivo .opt-btn').forEach(function(b) { b.classList.add('error-opt'); });
+      ok = false;
+    }
+    return ok;
+  }
+
+  function validateStep5() {
+    var ok = true;
+    var nome = document.getElementById('nomeCompleto').value.trim();
+    var tel = document.getElementById('telemovel').value.replace(/\s/g,'').replace(/\+/g,'');
+    var emailVal = document.getElementById('email').value.trim();
+    if (!nome) { setInputError('nomeCompleto', true); document.getElementById('err-nome').style.display='block'; ok=false; }
+    else { setInputError('nomeCompleto', false); document.getElementById('err-nome').style.display='none'; }
+    if (tel.length < 9 || !/^\d+$/.test(tel)) { setInputError('telemovel', true); document.getElementById('err-tel').style.display='block'; ok=false; }
+    else { setInputError('telemovel', false); document.getElementById('err-tel').style.display='none'; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(emailVal)) { setInputError('email', true); document.getElementById('err-email').style.display='block'; ok=false; }
+    else { setInputError('email', false); document.getElementById('err-email').style.display='none'; }
+    return ok;
+  }
+
+  function collectAnswers() {
+    answers.tipoProc = getSelectedVal('tipoProc');
+    answers.tipologiaProc = getSelectedVal('tipologiaProc');
+    answers.locProc = document.getElementById('locProc').value.trim();
+    answers.tipoAtual = getSelectedVal('tipoAtual');
+    answers.tipologiaAtual = getSelectedVal('tipologiaAtual');
+    answers.estadoImovel = getSelectedVal('estadoImovel');
+    answers.zonaAtual = document.getElementById('zonaAtual') ? document.getElementById('zonaAtual').value.trim() : '';
+    answers.temCredito = getSelectedVal('temCredito');
+    answers.capitalDivida = getSelectedVal('capitalDivida');
+    answers.capitaisProprios = getSelectedVal('capitaisProprios');
+    answers.prazo = getSelectedVal('prazo');
+    answers.motivo = getSelectedVal('motivo');
+    answers.nome = document.getElementById('nomeCompleto').value.trim();
+    answers.tel = document.getElementById('telemovel').value.trim();
+    answers.email = document.getElementById('email').value.trim();
+  }
+
+  function calcScore() {
+    var score = 5;
+    var cp = answers.capitaisProprios;
+    if (cp === '20.000€ a 60.000€') score += 1;
+    if (cp === 'Mais de 60.000€') score += 2;
+    if (cp === 'Nenhum') score -= 1;
+    if (answers.temCredito === 'Não') score += 1;
+    var divida = answers.capitalDivida;
+    if (divida === 'Mais de 200.000€') score -= 1;
+    var prazo = answers.prazo;
+    if (prazo === '3 a 6 meses') score += 1;
+    if (prazo === 'Mais de 6 meses') score += 1;
+    if (answers.tipoAtual === 'Não preciso vender') score += 1;
+    if (answers.tipoProc && answers.tipoAtual && answers.tipoProc === answers.tipoAtual) score += 0.5;
+    score = Math.max(0, Math.min(10, score));
+    return Math.round(score * 10) / 10;
+  }
+
+  function nextStep(step) {
+    var ok = false;
+    if (step === 1) ok = validateStep1();
+    if (step === 2) ok = validateStep2();
+    if (step === 3) ok = validateStep3();
+    if (step === 4) ok = validateStep4();
+    if (!ok) return;
+    document.getElementById('step' + step).classList.remove('active');
+    currentStep = step + 1;
+    var nextEl = document.getElementById('step' + currentStep);
+    nextEl.classList.add('active');
+    updateProgress();
+    window.scrollTo({top: document.querySelector('.quiz-wrapper').offsetTop - 20, behavior:'smooth'});
+  }
+
+  function goBack() {
+    if (currentStep <= 1) return;
+    document.getElementById('step' + currentStep).classList.remove('active');
+    currentStep--;
+    document.getElementById('step' + currentStep).classList.add('active');
+    updateProgress();
+    window.scrollTo({top: document.querySelector('.quiz-wrapper').offsetTop - 20, behavior:'smooth'});
+  }
+
+  function updateProgress() {
+    var pct = (currentStep / 5) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('stepTxt').textContent = 'Passo ' + currentStep + ' de 5';
+    document.getElementById('back1').classList.toggle('show', currentStep > 1);
+  }
+
+  function submitForm() {
+    if (!validateStep5()) return;
+    collectAnswers();
+    var score = calcScore();
+    answers.score = score;
+    sessionStorage.setItem('simData', JSON.stringify(answers));
+    window.location.href = 'resultado.html';
+  }
+
+  // Input live-clear errors
+  document.getElementById('locProc').addEventListener('input', function() {
+    if (this.value.trim()) { this.classList.remove('error'); document.getElementById('err-locProc').style.display='none'; }
+  });
+  document.getElementById('nomeCompleto').addEventListener('input', function() {
+    if (this.value.trim()) { this.classList.remove('error'); document.getElementById('err-nome').style.display='none'; }
+  });
+  document.getElementById('telemovel').addEventListener('input', function() {
+    var t = this.value.replace(/\s/g,'').replace(/\+/g,'');
+    if (t.length >= 9) { this.classList.remove('error'); document.getElementById('err-tel').style.display='none'; }
+  });
+  document.getElementById('email').addEventListener('input', function() {
+    if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(this.value.trim())) { this.classList.remove('error'); document.getElementById('err-email').style.display='none'; }
+  });
+</script>
+</body>
+</html>
